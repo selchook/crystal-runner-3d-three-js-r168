@@ -9,6 +9,46 @@ const CrazySDK = {
   gameplayStop()  { try { if(window.CrazyGames) window.CrazyGames.SDK.game.gameplayStop();  } catch{} }
 };
 
+const TUNNEL_SEGMENTS = 20;
+const SEGMENT_LENGTH  = 5;
+const TUNNEL_TOTAL    = TUNNEL_SEGMENTS * SEGMENT_LENGTH; // 100
+
+function makeScoreSprite(): THREE.Sprite {
+  const canvas = document.createElement('canvas');
+  canvas.width  = 384;
+  canvas.height = 96;
+  const mat = new THREE.SpriteMaterial({
+    map: new THREE.CanvasTexture(canvas),
+    transparent: true,
+    depthWrite: false,
+    depthTest: false
+  });
+  const sprite = new THREE.Sprite(mat);
+  sprite.renderOrder = 999;
+  return sprite;
+}
+
+function updateScoreSprite(sprite: THREE.Sprite, score: number, highScore: number) {
+  const mat = sprite.material as THREE.SpriteMaterial;
+  const tex = mat.map as THREE.CanvasTexture;
+  const canvas = tex.image as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.font = 'bold 40px Arial, sans-serif';
+  ctx.textBaseline = 'top';
+
+  ctx.fillStyle = '#00ffff';
+  ctx.textAlign = 'left';
+  ctx.fillText(`SCORE  ${score}`, 12, 4);
+
+  ctx.fillStyle = '#ffdd00';
+  ctx.textAlign = 'right';
+  ctx.fillText(`BEST  ${highScore}`, canvas.width - 12, 4);
+
+  tex.needsUpdate = true;
+}
+
 export class GameScene extends BaseScene {
   private player!: Player;
   private crystals: Crystal[] = [];
@@ -16,17 +56,14 @@ export class GameScene extends BaseScene {
   private tunnel!: THREE.Group;
   private speed = 5;
   private spawnTimer = 0;
-  private scoreDisplay!: THREE.Group;
+  private scoreSprite!: THREE.Sprite;
   private gameTime = 0;
-  private lastObstacleZ = 0;
-  private lastCrystalZ = 0;
 
   public enter() {
     CrazySDK.gameplayStart();
 
     this.scene.background = new THREE.Color(0x000011);
 
-    // Add lighting
     const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
     this.scene.add(ambientLight);
 
@@ -34,21 +71,15 @@ export class GameScene extends BaseScene {
     directionalLight.position.set(5, 5, 5);
     this.scene.add(directionalLight);
 
-    // Position camera
     this.camera.position.set(0, 1, 3);
     this.camera.lookAt(0, 0, 0);
 
-    // Create tunnel
     this.createTunnel();
 
-    // Create player
     this.player = new Player();
     this.scene.add(this.player.getMesh());
-
-    // Add camera to player for audio
     this.player.getMesh().add(this.engine.audioManager.getListener());
 
-    // Create score display
     this.createScoreDisplay();
 
     // Reset state
@@ -57,79 +88,55 @@ export class GameScene extends BaseScene {
     this.gameTime = 0;
     this.crystals = [];
     this.obstacles = [];
-    this.lastCrystalZ = -20;
-    this.lastObstacleZ = -30;
   }
 
   private createTunnel() {
     this.tunnel = new THREE.Group();
 
-    // Create tunnel segments
-    for (let i = 0; i < 20; i++) {
-      const segmentGroup = new THREE.Group();
+    for (let i = 0; i < TUNNEL_SEGMENTS; i++) {
+      const seg = new THREE.Group();
+      // Position the GROUP itself — children sit at local z=0
+      seg.position.z = -i * SEGMENT_LENGTH;
 
-      // Create tunnel ring
-      const ringGeometry = new THREE.RingGeometry(4, 5, 16);
-      const ringMaterial = new THREE.MeshBasicMaterial({
+      // Ring
+      const ringGeo = new THREE.RingGeometry(4, 5, 16);
+      const ringMat = new THREE.MeshBasicMaterial({
         color: 0x002244,
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.3,
         wireframe: true
       });
+      seg.add(new THREE.Mesh(ringGeo, ringMat));
 
-      const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-      ring.position.z = -i * 5;
-      segmentGroup.add(ring);
-
-      // Add some detail lines
+      // Detail pillars around the ring
+      const pillarGeo = new THREE.BoxGeometry(0.1, 0.5, 0.1);
+      const pillarMat = new THREE.MeshBasicMaterial({ color: 0x0044aa });
       for (let j = 0; j < 8; j++) {
-        const lineGeometry = new THREE.BoxGeometry(0.1, 0.5, 0.1);
-        const lineMaterial = new THREE.MeshBasicMaterial({ color: 0x0044aa });
-        const line = new THREE.Mesh(lineGeometry, lineMaterial);
-
         const angle = (j / 8) * Math.PI * 2;
-        line.position.x = Math.cos(angle) * 4.5;
-        line.position.y = Math.sin(angle) * 4.5;
-        line.position.z = -i * 5;
-
-        segmentGroup.add(line);
+        const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+        pillar.position.set(Math.cos(angle) * 4.5, Math.sin(angle) * 4.5, 0);
+        seg.add(pillar);
       }
 
-      this.tunnel.add(segmentGroup);
+      this.tunnel.add(seg);
     }
 
     this.scene.add(this.tunnel);
   }
 
   private createScoreDisplay() {
-    this.scoreDisplay = new THREE.Group();
+    this.scoreSprite = makeScoreSprite();
+    // Attach to camera so it always stays in view
+    this.scoreSprite.position.set(0, 1.55, -3);
+    this.scoreSprite.scale.set(5.5, 1.1, 1);
+    this.camera.add(this.scoreSprite);
+    this.scene.add(this.camera); // camera must be in scene for children to render
     this.updateScoreDisplay();
-    this.scene.add(this.scoreDisplay);
   }
 
   private updateScoreDisplay() {
-    // Clear existing score display
-    while (this.scoreDisplay.children.length > 0) {
-      this.scoreDisplay.remove(this.scoreDisplay.children[0]);
-    }
-
-    const score = this.engine.score;
-    const digits = score.toString().padStart(5, '0');
-    const dotGeo = new THREE.BoxGeometry(0.12, 0.18, 0.05);
-    const dotMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-
-    for (let i = 0; i < digits.length; i++) {
-      const val = parseInt(digits[i]);
-      // Draw a column of dots proportional to digit value
-      for (let d = 0; d <= val; d++) {
-        const dot = new THREE.Mesh(dotGeo, dotMat);
-        dot.position.x = (i - digits.length / 2) * 0.2 - 2;
-        dot.position.y = 2.5 + d * 0.22;
-        dot.position.z = -0.5;
-        this.scoreDisplay.add(dot);
-      }
-    }
+    updateScoreSprite(this.scoreSprite, this.engine.score, this.engine.highScore);
   }
 
   public update(deltaTime: number) {
@@ -139,11 +146,11 @@ export class GameScene extends BaseScene {
     // Gradually increase speed
     this.speed = 5 + this.gameTime * 0.3;
 
-    // Scroll tunnel forward and wrap segments
-    this.tunnel.children.forEach((segment: THREE.Object3D) => {
-      segment.position.z += this.speed * deltaTime;
-      if (segment.position.z > 10) {
-        segment.position.z -= 20 * 5; // wrap back (20 segments * 5 units each)
+    // Scroll tunnel — wrap segments that pass the camera
+    this.tunnel.children.forEach((seg: THREE.Object3D) => {
+      seg.position.z += this.speed * deltaTime;
+      if (seg.position.z > SEGMENT_LENGTH) {
+        seg.position.z -= TUNNEL_TOTAL;
       }
     });
 
@@ -168,15 +175,13 @@ export class GameScene extends BaseScene {
         continue;
       }
 
-      // Collision check
       if (this.player.getBoundingBox().intersectsBox(crystal.getBoundingBox())) {
         this.engine.audioManager.playCollectSound();
         this.engine.updateScore(this.engine.score + 10);
         this.updateScoreDisplay();
         this.scene.remove(crystal.getMesh());
         this.crystals.splice(i, 1);
-        // Celebrate every 100 points
-        if (this.engine.score % 100 === 0 && this.engine.score > 0) {
+        if (this.engine.score % 100 === 0) {
           try { if (window.CrazyGames) window.CrazyGames.SDK.game.happytime(); } catch {}
         }
       }
@@ -193,7 +198,6 @@ export class GameScene extends BaseScene {
         continue;
       }
 
-      // Collision check
       if (this.player.getBoundingBox().intersectsBox(obstacle.getBoundingBox())) {
         this.engine.audioManager.playHitSound();
         CrazySDK.gameplayStop();
@@ -204,19 +208,14 @@ export class GameScene extends BaseScene {
   }
 
   private spawnEntities() {
-    const rand = Math.random();
+    const x = (Math.random() - 0.5) * 5;
+    const y = (Math.random() - 0.5) * 5;
 
-    if (rand < 0.6) {
-      // Spawn a crystal
-      const x = (Math.random() - 0.5) * 5;
-      const y = (Math.random() - 0.5) * 5;
+    if (Math.random() < 0.6) {
       const crystal = new Crystal(x, y, -60);
       this.crystals.push(crystal);
       this.scene.add(crystal.getMesh());
     } else {
-      // Spawn an obstacle
-      const x = (Math.random() - 0.5) * 5;
-      const y = (Math.random() - 0.5) * 5;
       const obstacle = new Obstacle(x, y, -60);
       this.obstacles.push(obstacle);
       this.scene.add(obstacle.getMesh());
@@ -224,7 +223,7 @@ export class GameScene extends BaseScene {
   }
 
   public exit() {
-    // Remove all entities from scene
+    this.camera.remove(this.scoreSprite);
     this.crystals.forEach(c => this.scene.remove(c.getMesh()));
     this.obstacles.forEach(o => this.scene.remove(o.getMesh()));
     this.crystals = [];
