@@ -30,7 +30,6 @@ function makeTextSprite(
 
 export class GameOverScene extends BaseScene {
   private time = 0;
-  private shards: THREE.Mesh[] = [];
   private particles: THREE.Points[] = [];
 
   public enter() {
@@ -44,22 +43,8 @@ export class GameOverScene extends BaseScene {
 
     this.camera.position.set(0, 0, 10);
 
-    this.createShards();    // decorative — pushed to z = -4 (behind UI)
     this.createParticles(); // background — z spread, low opacity
     this.createPanel();     // all text sprites at z = 0 with depthTest off
-  }
-
-  /** Broken-shard decoration — lives well behind the text panel */
-  private createShards() {
-    const geo = new THREE.TetrahedronGeometry(0.38, 0);
-    const mat = new THREE.MeshPhongMaterial({ color: 0xff2200, emissive: 0x440000, shininess: 80 });
-    for (let i = 0; i < 6; i++) {
-      const s = new THREE.Mesh(geo, mat);
-      s.position.set((i - 2.5) * 1.55, 1.6, -4); // z=-4 → always behind sprites
-      s.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-      this.shards.push(s);
-      this.scene.add(s);
-    }
   }
 
   private createParticles() {
@@ -127,11 +112,6 @@ export class GameOverScene extends BaseScene {
   public update(deltaTime: number) {
     this.time += deltaTime;
 
-    this.shards.forEach((s, i) => {
-      s.rotation.y += deltaTime * (0.8 + i * 0.15);
-      s.position.y  = 1.6 + Math.sin(this.time * 1.5 + i) * 0.14;
-    });
-
     this.particles.forEach(p => { p.rotation.y += deltaTime * 0.2; });
 
     if (this.time > 0.5 && this.engine.inputManager.isPressed()) {
@@ -142,7 +122,6 @@ export class GameOverScene extends BaseScene {
   }
 
   public exit() {
-    this.shards = [];
     this.particles = [];
     this.scene.clear();
   }
