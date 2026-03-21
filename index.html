@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crystal Collector 3D</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f4c75);
+            overflow: hidden;
+            color: white;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0,0,0,0.9);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+            z-index: 200;
+            display: none;
+        }
+        
+        #startMenu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0,0,0,0.9);
+            padding: 40px;
+            border-radius: 15px;
+            border: 2px solid #00ffff;
+            z-index: 200;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(0,255,255,0.5);
+        }
+        
+        #instructions {
+            position: absolute;
