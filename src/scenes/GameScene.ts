@@ -199,13 +199,15 @@ export class GameScene extends BaseScene {
     this.hudScore = score;
     this.hudBest  = best;
 
-    // Score pill — upper-right corner, compact
-    this.hudScore.position.set(1.55, 1.42, -3);
+    // Right-align both pills to the upper-right corner.
+    // At z=-3, FOV=75°, 16:9 → half-width≈4.1, half-height≈2.3.
+    // Right-edge target = 3.95; top-edge target = 2.18.
+    // Center_x = right_edge - scale_x/2
     this.hudScore.scale.set(1.55, 0.44, 1);
+    this.hudScore.position.set(3.95 - 1.55 / 2, 2.18 - 0.44 / 2, -3); // (3.175, 1.96)
 
-    // Best badge — below score pill
-    this.hudBest.position.set(1.55, 1.02, -3);
     this.hudBest.scale.set(1.1, 0.32, 1);
+    this.hudBest.position.set(3.95 - 1.1 / 2, 2.18 - 0.44 - 0.04 - 0.32 / 2, -3); // (3.40, 1.54)
 
     this.camera.add(this.hudScore);
     this.camera.add(this.hudBest);
