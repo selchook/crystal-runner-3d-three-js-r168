@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GameEngine } from './engine/GameEngine';
 
-const container = document.getElementById('game-container')!;
+const container = document.getElementById('gameContainer')!;
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);

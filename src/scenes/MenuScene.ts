@@ -74,7 +74,7 @@ export class MenuScene extends BaseScene {
   }
 
   private createStartButton() {
-    const geometry = new THREE.RoundedBoxGeometry(3, 1, 0.3, 4, 0.1);
+    const geometry = new THREE.BoxGeometry(3, 1, 0.3);
     const material = new THREE.MeshPhongMaterial({ 
       color: 0x00aa00,
       emissive: 0x002200
