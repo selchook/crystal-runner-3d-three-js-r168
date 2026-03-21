@@ -1,13 +1,14 @@
 import * as THREE from 'three';
 import { BaseScene } from './BaseScene';
 
+/** Canvas-text sprite that always renders on top of 3-D geometry */
 function makeTextSprite(
   text: string,
   opts: { fontSize?: number; color?: string; width?: number; height?: number } = {}
 ): THREE.Sprite {
   const { fontSize = 56, color = '#ffffff', width = 512, height = 128 } = opts;
   const canvas = document.createElement('canvas');
-  canvas.width = width;
+  canvas.width  = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d')!;
   ctx.fillStyle = color;
@@ -16,9 +17,14 @@ function makeTextSprite(
   ctx.textBaseline = 'middle';
   ctx.fillText(text, width / 2, height / 2);
   const tex = new THREE.CanvasTexture(canvas);
-  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
+  const mat = new THREE.SpriteMaterial({
+    map: tex,
+    transparent: true,
+    depthTest: false,   // never hidden behind 3-D objects
+    depthWrite: false
+  });
   const sprite = new THREE.Sprite(mat);
-  sprite.scale.set((width / height) * (height / 64), height / 64, 1);
+  sprite.renderOrder = 10;  // draw after all 3-D meshes
   return sprite;
 }
 
@@ -38,122 +44,95 @@ export class GameOverScene extends BaseScene {
 
     this.camera.position.set(0, 0, 10);
 
-    this.createTitle();
-    this.createScorePanel();
-    this.createParticles();
-    this.createRestartHint();
+    this.createShards();    // decorative — pushed to z = -4 (behind UI)
+    this.createParticles(); // background — z spread, low opacity
+    this.createPanel();     // all text sprites at z = 0 with depthTest off
   }
 
-  private createTitle() {
-    // "GAME OVER" text sprite
-    const title = makeTextSprite('GAME OVER', {
-      fontSize: 80,
-      color: '#ff3300',
-      width: 640,
-      height: 140
-    });
-    title.position.set(0, 3.2, 0);
-    title.scale.set(8, 1.75, 1);
-    this.scene.add(title);
-
-    // Decorative broken shards
-    const shardGeo = new THREE.TetrahedronGeometry(0.35, 0);
-    const shardMat = new THREE.MeshPhongMaterial({ color: 0xff2200, emissive: 0x440000, shininess: 80 });
+  /** Broken-shard decoration — lives well behind the text panel */
+  private createShards() {
+    const geo = new THREE.TetrahedronGeometry(0.38, 0);
+    const mat = new THREE.MeshPhongMaterial({ color: 0xff2200, emissive: 0x440000, shininess: 80 });
     for (let i = 0; i < 6; i++) {
-      const shard = new THREE.Mesh(shardGeo, shardMat);
-      shard.position.set((i - 2.5) * 1.5, 1.7, 0);
-      shard.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-      this.shards.push(shard);
-      this.scene.add(shard);
+      const s = new THREE.Mesh(geo, mat);
+      s.position.set((i - 2.5) * 1.55, 1.6, -4); // z=-4 → always behind sprites
+      s.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+      this.shards.push(s);
+      this.scene.add(s);
     }
-  }
-
-  private createScorePanel() {
-    const score = this.engine.score;
-    const best  = this.engine.highScore;
-    const isNew = score > 0 && score >= best;
-
-    // Score value
-    const scoreSprite = makeTextSprite(String(score), {
-      fontSize: 90,
-      color: '#00ffff',
-      width: 300,
-      height: 120
-    });
-    scoreSprite.position.set(0, 0.5, 0);
-    scoreSprite.scale.set(3.5, 1.4, 1);
-    this.scene.add(scoreSprite);
-
-    // "YOUR SCORE" label
-    const label = makeTextSprite('YOUR SCORE', {
-      fontSize: 36,
-      color: '#888888',
-      width: 360,
-      height: 72
-    });
-    label.position.set(0, 1.35, 0);
-    label.scale.set(3.5, 0.7, 1);
-    this.scene.add(label);
-
-    // Divider line
-    const lineGeo = new THREE.BoxGeometry(4.5, 0.03, 0.01);
-    const lineMat = new THREE.MeshBasicMaterial({ color: 0x333355 });
-    const line = new THREE.Mesh(lineGeo, lineMat);
-    line.position.set(0, -0.45, 0);
-    this.scene.add(line);
-
-    // Best score row
-    const bestColor = isNew ? '#ffdd00' : '#aaaaaa';
-    const bestLabel = isNew ? '★  NEW BEST!' : `BEST  ${best}`;
-    const bestSprite = makeTextSprite(bestLabel, {
-      fontSize: 40,
-      color: bestColor,
-      width: 440,
-      height: 80
-    });
-    bestSprite.position.set(0, -0.9, 0);
-    bestSprite.scale.set(4.5, 0.8, 1);
-    this.scene.add(bestSprite);
   }
 
   private createParticles() {
     const count = 100;
-    const positions = new Float32Array(count * 3);
+    const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      positions[i * 3]     = (Math.random() - 0.5) * 30;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+      pos[i * 3]     = (Math.random() - 0.5) * 30;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 20;
+      pos[i * 3 + 2] = -5 - Math.random() * 15; // all behind the panel
     }
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const mat = new THREE.PointsMaterial({ color: 0xff2200, size: 0.1, transparent: true, opacity: 0.45 });
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({ color: 0xff2200, size: 0.1, transparent: true, opacity: 0.4 });
     const pts = new THREE.Points(geo, mat);
     this.particles.push(pts);
     this.scene.add(pts);
   }
 
-  private createRestartHint() {
-    const hint = makeTextSprite('TAP / PRESS ANY KEY TO RESTART', {
-      fontSize: 34,
-      color: '#666688',
-      width: 640,
-      height: 72
-    });
-    hint.position.set(0, -2.4, 0);
-    hint.scale.set(7, 0.72, 1);
+  /** All text sprites — depthTest:false ensures they sit on top */
+  private createPanel() {
+    const score  = this.engine.score;
+    const best   = this.engine.highScore;
+    const isNew  = score > 0 && score >= best;
+
+    // ── GAME OVER title ──────────────────────────────────────────────────────
+    const title = makeTextSprite('GAME OVER', { fontSize: 82, color: '#ff3300', width: 640, height: 140 });
+    title.position.set(0, 3.1, 0);
+    title.scale.set(8.5, 1.85, 1);
+    this.scene.add(title);
+
+    // ── "YOUR SCORE" label ───────────────────────────────────────────────────
+    const label = makeTextSprite('YOUR SCORE', { fontSize: 34, color: '#777799', width: 360, height: 66 });
+    label.position.set(0, 1.5, 0);
+    label.scale.set(3.8, 0.65, 1);
+    this.scene.add(label);
+
+    // ── Score number ─────────────────────────────────────────────────────────
+    const scoreSprite = makeTextSprite(String(score), { fontSize: 96, color: '#00ffff', width: 320, height: 128 });
+    scoreSprite.position.set(0, 0.55, 0);
+    scoreSprite.scale.set(3.8, 1.5, 1);
+    this.scene.add(scoreSprite);
+
+    // ── Thin divider ─────────────────────────────────────────────────────────
+    const lineGeo = new THREE.BoxGeometry(4.8, 0.025, 0.01);
+    const lineMesh = new THREE.Mesh(lineGeo, new THREE.MeshBasicMaterial({ color: 0x2a2a55 }));
+    lineMesh.position.set(0, -0.35, 0);
+    lineMesh.renderOrder = 9; // just below sprites, above particles
+    this.scene.add(lineMesh);
+
+    // ── Best score ───────────────────────────────────────────────────────────
+    const bestText  = isNew ? '★  NEW BEST!' : `BEST  ${best}`;
+    const bestColor = isNew ? '#ffdd00'       : '#888888';
+    const bestSprite = makeTextSprite(bestText, { fontSize: 40, color: bestColor, width: 480, height: 80 });
+    bestSprite.position.set(0, -0.85, 0);
+    bestSprite.scale.set(5.0, 0.85, 1);
+    this.scene.add(bestSprite);
+
+    // ── Restart hint ─────────────────────────────────────────────────────────
+    const hint = makeTextSprite('TAP / PRESS ANY KEY TO PLAY AGAIN', { fontSize: 32, color: '#555577', width: 680, height: 66 });
+    hint.position.set(0, -2.3, 0);
+    hint.scale.set(7.5, 0.72, 1);
     this.scene.add(hint);
   }
 
   public update(deltaTime: number) {
     this.time += deltaTime;
 
-    // Spin shards slowly
     this.shards.forEach((s, i) => {
       s.rotation.y += deltaTime * (0.8 + i * 0.15);
-      s.position.y = 1.7 + Math.sin(this.time * 1.5 + i) * 0.12;
+      s.position.y  = 1.6 + Math.sin(this.time * 1.5 + i) * 0.14;
     });
 
-    this.particles.forEach(p => { p.rotation.y += deltaTime * 0.25; });
+    this.particles.forEach(p => { p.rotation.y += deltaTime * 0.2; });
 
     if (this.time > 0.5 && this.engine.inputManager.isPressed()) {
       this.engine.audioManager.playMenuSound();

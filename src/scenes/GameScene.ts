@@ -13,42 +13,108 @@ const TUNNEL_SEGMENTS = 20;
 const SEGMENT_LENGTH  = 5;
 const TUNNEL_TOTAL    = TUNNEL_SEGMENTS * SEGMENT_LENGTH; // 100
 
-function makeScoreSprite(): THREE.Sprite {
-  const canvas = document.createElement('canvas');
-  canvas.width  = 320;
-  canvas.height = 56;
-  const mat = new THREE.SpriteMaterial({
-    map: new THREE.CanvasTexture(canvas),
-    transparent: true,
-    depthWrite: false,
-    depthTest: false
-  });
-  const sprite = new THREE.Sprite(mat);
-  sprite.renderOrder = 999;
-  return sprite;
+// ── CrazyGames-style HUD scoreboard ─────────────────────────────────────────
+// Two separate sprites: score pill (left) + best badge (right)
+
+const HUD_W = 256, HUD_H = 72;   // score pill canvas
+const BDG_W = 180, BDG_H = 52;   // best badge canvas
+
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
 }
 
-function updateScoreSprite(sprite: THREE.Sprite, score: number, highScore: number) {
-  const mat = sprite.material as THREE.SpriteMaterial;
-  const tex = mat.map as THREE.CanvasTexture;
-  const canvas = tex.image as HTMLCanvasElement;
-  const ctx = canvas.getContext('2d')!;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function makeHudSprites(): { score: THREE.Sprite; best: THREE.Sprite } {
+  function pill(w: number, h: number): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const mat = new THREE.SpriteMaterial({
+      map: new THREE.CanvasTexture(canvas),
+      transparent: true, depthWrite: false, depthTest: false
+    });
+    const s = new THREE.Sprite(mat);
+    s.renderOrder = 999;
+    return s;
+  }
+  return { score: pill(HUD_W, HUD_H), best: pill(BDG_W, BDG_H) };
+}
 
-  // Score — left, large
-  ctx.font = 'bold 36px Arial, sans-serif';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#00ffff';
-  ctx.textAlign = 'left';
-  ctx.fillText(String(score), 10, 28);
+function updateHud(score: THREE.Sprite, best: THREE.Sprite, scoreVal: number, bestVal: number) {
+  // ── score pill ─────────────────────────────────────────────────────────────
+  {
+    const mat = score.material as THREE.SpriteMaterial;
+    const tex = mat.map as THREE.CanvasTexture;
+    const cv  = tex.image as HTMLCanvasElement;
+    const ctx = cv.getContext('2d')!;
+    ctx.clearRect(0, 0, HUD_W, HUD_H);
 
-  // Best — right, small, muted
-  ctx.font = '22px Arial, sans-serif';
-  ctx.fillStyle = 'rgba(255,220,80,0.7)';
-  ctx.textAlign = 'right';
-  ctx.fillText(`↑ ${highScore}`, canvas.width - 10, 28);
+    // dark semi-transparent pill background
+    ctx.fillStyle = 'rgba(10,10,26,0.72)';
+    roundRect(ctx, 2, 2, HUD_W - 4, HUD_H - 4, 18);
+    ctx.fill();
 
-  tex.needsUpdate = true;
+    // subtle border
+    ctx.strokeStyle = 'rgba(0,200,255,0.25)';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, 2, 2, HUD_W - 4, HUD_H - 4, 18);
+    ctx.stroke();
+
+    // "SCORE" micro-label
+    ctx.font = '500 16px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(0,200,255,0.55)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText('SCORE', HUD_W / 2, 7);
+
+    // large score number
+    ctx.font = 'bold 36px Arial, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(String(scoreVal), HUD_W / 2, HUD_H - 6);
+
+    tex.needsUpdate = true;
+  }
+
+  // ── best badge ─────────────────────────────────────────────────────────────
+  {
+    const mat = best.material as THREE.SpriteMaterial;
+    const tex = mat.map as THREE.CanvasTexture;
+    const cv  = tex.image as HTMLCanvasElement;
+    const ctx = cv.getContext('2d')!;
+    ctx.clearRect(0, 0, BDG_W, BDG_H);
+
+    ctx.fillStyle = 'rgba(10,10,26,0.60)';
+    roundRect(ctx, 2, 2, BDG_W - 4, BDG_H - 4, 14);
+    ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255,210,0,0.22)';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, 2, 2, BDG_W - 4, BDG_H - 4, 14);
+    ctx.stroke();
+
+    // star + label
+    ctx.font = '500 13px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,200,0,0.60)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText('★  BEST', BDG_W / 2, 5);
+
+    ctx.font = 'bold 26px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,220,80,0.92)';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(String(bestVal), BDG_W / 2, BDG_H - 5);
+
+    tex.needsUpdate = true;
+  }
 }
 
 export class GameScene extends BaseScene {
@@ -58,7 +124,8 @@ export class GameScene extends BaseScene {
   private tunnel!: THREE.Group;
   private speed = 5;
   private spawnTimer = 0;
-  private scoreSprite!: THREE.Sprite;
+  private hudScore!: THREE.Sprite;
+  private hudBest!: THREE.Sprite;
   private gameTime = 0;
 
   public enter() {
@@ -128,17 +195,26 @@ export class GameScene extends BaseScene {
   }
 
   private createScoreDisplay() {
-    this.scoreSprite = makeScoreSprite();
-    // Attach to camera so it always stays in view
-    this.scoreSprite.position.set(0, 1.45, -3);
-    this.scoreSprite.scale.set(3.2, 0.56, 1);
-    this.camera.add(this.scoreSprite);
+    const { score, best } = makeHudSprites();
+    this.hudScore = score;
+    this.hudBest  = best;
+
+    // Score pill — top-centre
+    this.hudScore.position.set(-0.85, 1.52, -3);
+    this.hudScore.scale.set(2.2, 0.62, 1);
+
+    // Best badge — right of score pill
+    this.hudBest.position.set(0.88, 1.52, -3);
+    this.hudBest.scale.set(1.55, 0.45, 1);
+
+    this.camera.add(this.hudScore);
+    this.camera.add(this.hudBest);
     this.scene.add(this.camera); // camera must be in scene for children to render
     this.updateScoreDisplay();
   }
 
   private updateScoreDisplay() {
-    updateScoreSprite(this.scoreSprite, this.engine.score, this.engine.highScore);
+    updateHud(this.hudScore, this.hudBest, this.engine.score, this.engine.highScore);
   }
 
   public update(deltaTime: number) {
@@ -225,7 +301,8 @@ export class GameScene extends BaseScene {
   }
 
   public exit() {
-    this.camera.remove(this.scoreSprite);
+    this.camera.remove(this.hudScore);
+    this.camera.remove(this.hudBest);
     this.crystals.forEach(c => this.scene.remove(c.getMesh()));
     this.obstacles.forEach(o => this.scene.remove(o.getMesh()));
     this.crystals = [];

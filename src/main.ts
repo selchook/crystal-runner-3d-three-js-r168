@@ -16,5 +16,5 @@ const engine = new GameEngine(renderer);
 
 (async () => {
   if (window.CrazyGames) await window.CrazyGames.SDK.init();
-  engine.start('boot');
+  engine.start('menu');
 })();

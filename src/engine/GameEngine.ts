@@ -2,12 +2,11 @@ import * as THREE from 'three';
 import { InputManager } from './InputManager';
 import { AudioManager } from './AudioManager';
 import { BaseScene } from '../scenes/BaseScene';
-import { BootScene } from '../scenes/BootScene';
 import { MenuScene } from '../scenes/MenuScene';
 import { GameScene } from '../scenes/GameScene';
 import { GameOverScene } from '../scenes/GameOverScene';
 
-export type SceneType = 'boot' | 'menu' | 'game' | 'gameOver';
+export type SceneType = 'menu' | 'game' | 'gameOver';
 
 export class GameEngine {
   private renderer: THREE.WebGLRenderer;
@@ -33,7 +32,6 @@ export class GameEngine {
   }
 
   private initializeScenes() {
-    this.scenes.set('boot', new BootScene(this));
     this.scenes.set('menu', new MenuScene(this));
     this.scenes.set('game', new GameScene(this));
     this.scenes.set('gameOver', new GameOverScene(this));
