@@ -15,8 +15,8 @@ const TUNNEL_TOTAL    = TUNNEL_SEGMENTS * SEGMENT_LENGTH; // 100
 
 function makeScoreSprite(): THREE.Sprite {
   const canvas = document.createElement('canvas');
-  canvas.width  = 384;
-  canvas.height = 96;
+  canvas.width  = 320;
+  canvas.height = 56;
   const mat = new THREE.SpriteMaterial({
     map: new THREE.CanvasTexture(canvas),
     transparent: true,
@@ -35,16 +35,18 @@ function updateScoreSprite(sprite: THREE.Sprite, score: number, highScore: numbe
   const ctx = canvas.getContext('2d')!;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.font = 'bold 40px Arial, sans-serif';
-  ctx.textBaseline = 'top';
-
+  // Score — left, large
+  ctx.font = 'bold 36px Arial, sans-serif';
+  ctx.textBaseline = 'middle';
   ctx.fillStyle = '#00ffff';
   ctx.textAlign = 'left';
-  ctx.fillText(`SCORE  ${score}`, 12, 4);
+  ctx.fillText(String(score), 10, 28);
 
-  ctx.fillStyle = '#ffdd00';
+  // Best — right, small, muted
+  ctx.font = '22px Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,220,80,0.7)';
   ctx.textAlign = 'right';
-  ctx.fillText(`BEST  ${highScore}`, canvas.width - 12, 4);
+  ctx.fillText(`↑ ${highScore}`, canvas.width - 10, 28);
 
   tex.needsUpdate = true;
 }
@@ -128,8 +130,8 @@ export class GameScene extends BaseScene {
   private createScoreDisplay() {
     this.scoreSprite = makeScoreSprite();
     // Attach to camera so it always stays in view
-    this.scoreSprite.position.set(0, 1.55, -3);
-    this.scoreSprite.scale.set(5.5, 1.1, 1);
+    this.scoreSprite.position.set(0, 1.45, -3);
+    this.scoreSprite.scale.set(3.2, 0.56, 1);
     this.camera.add(this.scoreSprite);
     this.scene.add(this.camera); // camera must be in scene for children to render
     this.updateScoreDisplay();
