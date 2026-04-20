@@ -53,7 +53,7 @@ export class MenuScene extends BaseScene {
 
   private createTitle() {
     // Main title sprite
-    const title = makeTextSprite('CRYSTAL RUNNER 3D', {
+    const title = makeTextSprite('CRYSTAL RUNNER-3D', {
       fontSize: 60,
       color: '#00ffff',
       width: 768,
