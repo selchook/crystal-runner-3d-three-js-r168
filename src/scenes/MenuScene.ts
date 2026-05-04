@@ -158,8 +158,8 @@ export class MenuScene extends BaseScene {
       p.rotation.x += deltaTime * (0.3 + i * 0.1);
     });
 
-    // Check for input
-    if (this.engine.inputManager.isPressed()) {
+    // When GHA is present, let the SDK's onStart callback control game start
+    if (!window.GHA && this.engine.inputManager.isPressed()) {
       this.engine.audioManager.playMenuSound();
       this.engine.resetScore();
       this.engine.setScene('game');

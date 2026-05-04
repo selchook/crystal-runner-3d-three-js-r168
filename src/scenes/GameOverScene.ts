@@ -114,7 +114,8 @@ export class GameOverScene extends BaseScene {
 
     this.particles.forEach(p => { p.rotation.y += deltaTime * 0.2; });
 
-    if (this.time > 0.5 && this.engine.inputManager.isPressed()) {
+    // When GHA is present, the SDK's game-over overlay and Play Again button handle restart
+    if (this.time > 0.5 && !window.GHA && this.engine.inputManager.isPressed()) {
       this.engine.audioManager.playMenuSound();
       this.engine.resetScore();
       this.engine.setScene('game');

@@ -16,14 +16,24 @@ const engine = new GameEngine(renderer);
 
 (async () => {
   if (window.GHA) {
+    // GHA manages the session lifecycle: splash → onStart → gameplay → endGame → Play Again
     window.GHA.onStart(() => {
       engine.resetScore();
       engine.setScene('game');
       window.GHA?.startGame();
     });
 
-    // Keep engine render loop alive, but let GHA decide when gameplay starts.
+    window.GHA.onPause(() => {
+      engine.stop();
+    });
+
+    window.GHA.onResume(() => {
+      engine.resume();
+    });
+
+    // Start the engine on menu (renders as background behind GHA splash)
     engine.start('menu');
+    // Signal the platform that the game page is loaded
     window.GHA.ready();
     return;
   }
