@@ -17,12 +17,12 @@ This privacy policy applies to "create a 3d addictive game" ("the Game") develop
 
 *Note: The Game uses minimal data collection and stores most data locally on your device.*
 
-## CrazyGames SDK Data
+## GHA SDK Data
 
-When played on CrazyGames platform:
-- CrazyGames handles user accounts, social features, and platform analytics
-- Refer to [CrazyGames Privacy Policy](https://www.crazygames.com/privacy-policy) for platform-specific data handling
-- The Game may receive anonymized user preferences from CrazyGames SDK for optimization purposes
+When played on GameHub Arena platform:
+- GameHub Arena handles user accounts, social features, and platform analytics
+- Refer to [GameHub Arena Privacy Policy](https://gamehub-arena.com/privacy-policy) for platform-specific data handling
+- The Game may receive anonymized user preferences from GHA SDK for optimization purposes
 
 ## Third Parties
 
@@ -33,7 +33,7 @@ When played on CrazyGames platform:
 
 ### No Additional Third Parties
 - The Game does not integrate additional analytics, advertising, or social media services
-- All game functionality operates independently or through CrazyGames platform
+- All game functionality operates independently or through GameHub Arena platform
 
 ## Children's Privacy (COPPA Compliance)
 
@@ -74,7 +74,7 @@ When played on CrazyGames platform:
 **Email**: [privacy@yourdomain.com]
 **Response Time**: Within 30 days for privacy requests
 
-For CrazyGames platform-related privacy concerns, contact CrazyGames directly.
+For GameHub Arena platform-related privacy concerns, contact GameHub Arena directly.
 
 ---
 
@@ -98,13 +98,13 @@ These terms govern your use of "create a 3d addictive game" ("the Game").
 - Attempting to exploit or hack game systems
 - Distributing malicious content through game features
 
-**CrazyGames Platform**: When playing on CrazyGames, you must also comply with [CrazyGames Terms of Service](https://www.crazygames.com/terms-of-service).
+**GameHub Arena Platform**: When playing on GameHub Arena, you must also comply with [GameHub Arena Terms of Service](https://gamehub-arena.com/terms-of-service).
 
 ## Intellectual Property
 
 - Game content, graphics, and code are protected by copyright
 - You may create fan content (videos, images) for non-commercial sharing
-- CrazyGames has rights to display and promote the game on their platform
+- GameHub Arena has rights to display and promote the game on their platform
 
 ## Service Availability
 

@@ -1,26 +1,6 @@
 import * as THREE from 'three';
 import { BaseScene } from './BaseScene';
 
-// CrazyGames SDK helper
-const CrazySDK = {
-  _ready: false,
-  async init() {
-    if (typeof window.CrazyGames === 'undefined') { this._ready = true; return; }
-    try {
-      await window.CrazyGames.SDK.init();
-      this._ready = true;
-      const s = window.CrazyGames.SDK.game.settings;
-      if (s?.muteAudio) this._muted = true;
-    } catch(e) { this._ready = true; }
-  },
-  _muted: false,
-  gameplayStart() { try { if(window.CrazyGames) window.CrazyGames.SDK.game.gameplayStart(); } catch{} },
-  gameplayStop()  { try { if(window.CrazyGames) window.CrazyGames.SDK.game.gameplayStop();  } catch{} },
-  loadingStart()  { try { if(window.CrazyGames) window.CrazyGames.SDK.game.loadingStart();  } catch{} },
-  loadingStop()   { try { if(window.CrazyGames) window.CrazyGames.SDK.game.loadingStop();   } catch{} },
-  happytime()     { try { if(window.CrazyGames) window.CrazyGames.SDK.game.happytime();     } catch{} }
-};
-
 export class BootScene extends BaseScene {
   private loadingProgress = 0;
   private loadingCube!: THREE.Mesh;
@@ -49,7 +29,6 @@ export class BootScene extends BaseScene {
     this.createTitleText();
 
     // Start loading
-    CrazySDK.loadingStart();
     this.initGame();
   }
 
@@ -76,8 +55,7 @@ export class BootScene extends BaseScene {
     const loadSteps = [
       () => this.loadAudio(),
       () => this.loadGeometry(),
-      () => this.loadMaterials(),
-      () => CrazySDK.init()
+      () => this.loadMaterials()
     ];
 
     for (let i = 0; i < loadSteps.length; i++) {
@@ -86,16 +64,12 @@ export class BootScene extends BaseScene {
       await this.delay(300);
     }
 
-    CrazySDK.loadingStop();
     await this.delay(500);
     this.engine.setScene('menu');
   }
 
   private async loadAudio() {
     // Initialize audio manager
-    if (CrazySDK._muted) {
-      this.engine.audioManager.mute();
-    }
   }
 
   private async loadGeometry() {

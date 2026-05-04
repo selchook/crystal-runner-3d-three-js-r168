@@ -4,16 +4,11 @@ import { Player } from '../entities/Player';
 import { Crystal } from '../entities/Crystal';
 import { Obstacle } from '../entities/Obstacle';
 
-const CrazySDK = {
-  gameplayStart() { try { if(window.CrazyGames) window.CrazyGames.SDK.game.gameplayStart(); } catch{} },
-  gameplayStop()  { try { if(window.CrazyGames) window.CrazyGames.SDK.game.gameplayStop();  } catch{} }
-};
-
 const TUNNEL_SEGMENTS = 20;
 const SEGMENT_LENGTH  = 5;
 const TUNNEL_TOTAL    = TUNNEL_SEGMENTS * SEGMENT_LENGTH; // 100
 
-// ── CrazyGames-style HUD scoreboard ─────────────────────────────────────────
+// ── HUD scoreboard ───────────────────────────────────────────────────────────
 // Two separate sprites: score pill (left) + best badge (right)
 
 const HUD_W = 256, HUD_H = 72;   // score pill canvas
@@ -129,8 +124,6 @@ export class GameScene extends BaseScene {
   private gameTime = 0;
 
   public enter() {
-    CrazySDK.gameplayStart();
-
     this.scene.background = new THREE.Color(0x000011);
 
     const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
@@ -261,9 +254,6 @@ export class GameScene extends BaseScene {
         this.updateScoreDisplay();
         this.scene.remove(crystal.getMesh());
         this.crystals.splice(i, 1);
-        if (this.engine.score % 100 === 0) {
-          try { if (window.CrazyGames) window.CrazyGames.SDK.game.happytime(); } catch {}
-        }
       }
     }
 
@@ -280,7 +270,16 @@ export class GameScene extends BaseScene {
 
       if (this.player.getBoundingBox().intersectsBox(obstacle.getBoundingBox())) {
         this.engine.audioManager.playHitSound();
-        CrazySDK.gameplayStop();
+
+        if (window.GHA) {
+          window.GHA.endGame({
+            score: this.engine.score,
+            won: false,
+            message: 'Game over'
+          });
+          return;
+        }
+
         this.engine.setScene('gameOver');
         return;
       }

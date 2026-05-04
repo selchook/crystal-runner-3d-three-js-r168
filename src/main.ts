@@ -15,6 +15,18 @@ window.addEventListener('resize', () => {
 const engine = new GameEngine(renderer);
 
 (async () => {
-  if (window.CrazyGames) await window.CrazyGames.SDK.init();
+  if (window.GHA) {
+    window.GHA.onStart(() => {
+      engine.resetScore();
+      engine.setScene('game');
+      window.GHA?.startGame();
+    });
+
+    // Keep engine render loop alive, but let GHA decide when gameplay starts.
+    engine.start('menu');
+    window.GHA.ready();
+    return;
+  }
+
   engine.start('menu');
 })();

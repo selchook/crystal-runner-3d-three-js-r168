@@ -4,7 +4,7 @@
 - Three.js r168 setup is correct
 - Basic renderer configuration with shadows enabled
 - Proper TypeScript project structure
-- CrazyGames SDK script loaded in HTML head
+- GHA SDK script loaded in HTML head
 
 ## ❌ Bugs Found
 
@@ -28,7 +28,7 @@
 - **src/scenes/BootScene.ts** - Referenced but not provided
 - **src/scenes/MenuScene.ts** - Referenced but not provided
 
-## 🎮 CrazyGames SDK Check
+## 🎮 GHA SDK Check
 - [x] SDK script in index.html <head>
 - [x] SDK.init() awaited before gameplay (main.ts line 20)
 - [ ] loadingStart() - NOT FOUND
@@ -61,9 +61,9 @@
 3. Create **src/scenes/BootScene.ts** and **MenuScene.ts** 
 4. Create entity files: **src/entities/Player.ts**, **Crystal.ts**, **Obstacle.ts**
 5. Complete **GameScene.ts** - fix truncated code and add camera setup
-6. Add CrazyGames `loadingStart()`, `loadingStop()`, `happytime()` calls
+6. Add GameHub Arena `loadingStart()`, `loadingStop()`, `happytime()` calls
 7. Move TypeScript to devDependencies in package.json
 8. Add missing InputManager.ts and AudioManager.ts implementations
 
 ## 📋 Error Log Entry
-Critical missing files: GameEngine.ts and all entity classes. GameScene.ts incomplete/truncated. CrazyGames SDK integration incomplete - missing loading states.
+Critical missing files: GameEngine.ts and all entity classes. GameScene.ts incomplete/truncated. GHA SDK integration incomplete - missing loading states.

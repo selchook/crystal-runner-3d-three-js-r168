@@ -1,5 +1,5 @@
 # HTML5 3D Game Error Reference Guide
-**Three.js r168 | Vercel | CrazyGames**
+**Three.js r168 | Vercel | GameHub Arena**
 
 ---
 
@@ -112,17 +112,32 @@ const texture = loader.load(
 
 ---
 
-## 3. CrazyGames SDK errors
+## 3. GHA SDK errors
 
-### ❌ `CrazyGames SDK failed to initialize`
+### ❌ `GHA SDK failed to initialize`
 ```js
-CrazyGames SDK is not available
+GHA SDK is not available
 ```
 **Fix - index.html:**
 ```html
-<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+<script src="/js/gha-game-sdk.js"></script>
 <script>
-window.addEventListener('load', async () => {
+window.addEventListener('load', () => {
   try {
-    if (window.CrazyGames) {
-      await window.CrazyGames.SDK.
+    if (window.GHA) {
+      window.GHA.ready();
+      window.GHA.onStart(() => {
+        startGame();
+        window.GHA.startGame();
+      });
+    } else {
+      // Standalone fallback if SDK is unavailable
+      startGame();
+    }
+  } catch (err) {
+    console.error('GHA init failed', err);
+    startGame();
+  }
+});
+</script>
+```

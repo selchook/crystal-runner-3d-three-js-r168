@@ -3,17 +3,17 @@
 ## Engine: Three.js r168
 ❌ **MISMATCH** - Code imports `import * as THREE from 'three'` but no version specification in visible package.json to confirm r168
 
-## CrazyGames SDK in index.html <head>
-✅ **MATCH** - SDK script tag present: `<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>`
+## GHA SDK in index.html <head>
+✅ **MATCH** - SDK script tag present: `<script src="/js/gha-game-sdk.js"></script>`
 
 ## loadingStart/Stop called
-❌ **MISMATCH** - No evidence of `window.CrazyGames.SDK.game.loadingStart()` or `loadingStop()` calls in provided code samples
+❌ **MISMATCH** - No evidence of `window.GHA.ready()` and `window.GHA.onStart()` usage in provided code samples
 
 ## gameplayStart/Stop called  
 ❌ **MISMATCH** - `gameplayStart` listed in sdkEvents but no implementation visible in code samples
 
 ## happytime() called
-❌ **MISMATCH** - `happyTime` listed in sdkEvents but no `window.CrazyGames.SDK.game.happytime()` calls found
+❌ **MISMATCH** - No evidence of optional score checkpoint reporting via `window.GHA.submitScore()` in provided code samples
 
 ## All assets procedural (no external files)
 ⚠️ **UNKNOWN** - Cannot verify without seeing asset loading code in AssetManager or scene implementations
@@ -42,12 +42,12 @@
 ## Summary
 
 ### ✅ Correct
-- CrazyGames SDK script inclusion
+- GHA SDK script inclusion
 - State machine enumeration matches requirements
 - vercel.json deployment config present
 
 ### ❌ Diverges
-- Missing CrazyGames SDK integration calls (loadingStart/Stop, gameplayStart/Stop, happytime)
+- Missing GHA SDK integration calls (loadingStart/Stop, gameplayStart/Stop, happytime)
 - No CSS styling for user-select:none
 - Package.json build configuration not verified
 - Three.js version not confirmed as r168
@@ -60,4 +60,4 @@
 5. **Add touch input support** in InputManager
 6. **Implement audio system** using Web Audio API
 
-**Critical missing**: The core CrazyGames integration is incomplete - SDK events must be properly triggered for platform compliance.
+**Critical missing**: The core GameHub Arena integration is incomplete - SDK events must be properly triggered for platform compliance.

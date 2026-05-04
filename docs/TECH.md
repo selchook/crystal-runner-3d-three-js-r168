@@ -7,7 +7,7 @@
 - **WebGL shader support**: Custom materials for crystal refractions, tunnel glow effects
 - **Performance**: Instanced rendering for thousands of gems/obstacles
 - **Cross-platform**: Consistent rendering across Chrome/Edge/mobile
-- **Bundle size**: Core Three.js ~600KB gzipped, fits CrazyGames requirements
+- **Bundle size**: Core Three.js ~600KB gzipped, fits GameHub Arena requirements
 - **Web Audio integration**: Seamless positional audio for 3D spatial effects
 
 ## 2. Project File Structure
@@ -34,13 +34,13 @@ crystal-runner-3d/
 │   │   └── Obstacle.js        # Deadly barriers
 │   ├── systems/
 │   │   ├── InputSystem.js     # Unified input handling
-│   │   ├── AudioSystem.js     # Web Audio + CrazyGames mute
+│   │   ├── AudioSystem.js     # Web Audio + GameHub Arena mute
 │   │   ├── ParticleSystem.js  # GPU particle effects
 │   │   └── CollisionSystem.js # AABB/sphere collision
 │   └── utils/
 │       ├── MathUtils.js       # 3D math helpers
 │       └── ProceduralUtils.js # Geometry generation
-├── index.html                 # CrazyGames SDK script
+├── index.html                 # GHA SDK script
 ├── style.css                  # Canvas setup, user-select:none
 ├── vite.config.js             # Build configuration
 └── package.json               # Three.js r168 dependency
@@ -48,7 +48,7 @@ crystal-runner-3d/
 
 ## 3. Scene Architecture (Boot→Load→Menu→Game→GameOver)
 
-**BootScene**: CrazyGames SDK initialization, immediate transition
+**BootScene**: GHA SDK initialization, immediate transition
 **LoadScene**: Procedural asset generation (tunnel meshes, materials), progress bar
 **MenuScene**: Title screen with play button, particle background
 **GameScene**: Core 3D gameplay loop, tunnel generation, collision detection
@@ -70,7 +70,7 @@ const GameState = {
 };
 ```
 
-State transitions trigger CrazyGames SDK events:
+State transitions trigger GHA SDK events:
 - LOADING → `loadingStart()`
 - MENU → `loadingStop()` 
 - PLAYING → `gameplayStart()`

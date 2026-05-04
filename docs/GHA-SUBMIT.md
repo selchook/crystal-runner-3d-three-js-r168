@@ -1,11 +1,11 @@
-# CrazyGames Submission Guide for Crystal Runner 3D
+# GameHub Arena Submission Guide for Crystal Runner 3D
 
 ## 1. Account Setup
 
-- Visit [developer.crazygames.com](https://developer.crazygames.com) and create a developer account
+- Visit [developer.gamehub-arena.com](https://developer.gamehub-arena.com) and create a developer account
 - Complete profile with studio information and contact details
 - Verify email address and accept developer terms
-- Set up payment information for revenue sharing (70% developer, 30% CrazyGames)
+- Set up payment information for revenue sharing (70% developer, 30% GameHub Arena)
 
 ## 2. Pre-submission Checklist (Technical Requirements)
 
@@ -26,36 +26,32 @@
 
 ## 3. SDK Integration Verification Steps
 
-### Install CrazyGames SDK
-```bash
-npm install @crazygames/sdk
+### Install GHA SDK
+No npm package is required for this project. The SDK is served from the game itself:
+
+```html
+<script src="/js/gha-game-sdk.js"></script>
 ```
 
 ### Essential SDK Integration
 ```javascript
-import { CrazyGames } from '@crazygames/sdk';
+// Signal that your game page is loaded
+window.GHA?.ready();
 
-// Initialize SDK
-CrazyGames.SDK.init();
+// Start gameplay only when platform sends start
+window.GHA?.onStart(() => {
+  startGame();
+  window.GHA?.startGame();
+});
 
-// Ad integration points
-function showRewardedAd() {
-    CrazyGames.SDK.ad.requestAd('rewarded', {
-        adFinished: () => {
-            // Grant reward (extra lives, gems, etc.)
-        },
-        adError: () => {
-            // Handle ad failure gracefully
-        }
-    });
+// End session and show platform game-over overlay
+function onPlayerDied(score) {
+  window.GHA?.endGame({
+    score,
+    won: false,
+    message: 'Game over'
+  });
 }
-
-// Gameplay events tracking
-CrazyGames.SDK.game.gameplayStart();
-CrazyGames.SDK.game.gameplayStop();
-
-// Happy time (optimal ad moments)
-CrazyGames.SDK.game.happyTime();
 ```
 
 ### Test SDK Integration
@@ -122,4 +118,4 @@ export default {
 ### Recommended Tags:
 - `3d`, `running`, `endless`, `collecting`, `arcade`
 - `crystals`, `tunnel`, `speed`, `reflex`, `casual`
-- `webgl`, `three-js`, `mobile-
+- `webgl`, `three-js`, `mobile`

@@ -1,6 +1,6 @@
 # ASO Analysis: Crystal Runner 3D
 
-## CrazyGames Optimization
+## GameHub Arena Optimization
 
 ### Title Variants (5)
 1. **Crystal Runner 3D** (primary)
