@@ -59,6 +59,14 @@ export class GameEngine {
     this.isRunning = false;
   }
 
+  public resume() {
+    if (!this.isRunning) {
+      this.isRunning = true;
+      this.clock.getDelta(); // discard accumulated delta to avoid a large jump
+      this.animate();
+    }
+  }
+
   private animate = () => {
     if (!this.isRunning) return;
     
