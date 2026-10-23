@@ -3,6 +3,7 @@ import { BaseScene } from './BaseScene';
 import { Player } from '../entities/Player';
 import { Crystal } from '../entities/Crystal';
 import { Obstacle } from '../entities/Obstacle';
+import { onPlatform } from '../ayvago/platform';
 
 const TUNNEL_SEGMENTS = 20;
 const SEGMENT_LENGTH  = 5;
@@ -123,7 +124,12 @@ export class GameScene extends BaseScene {
   private hudBest!: THREE.Sprite;
   private gameTime = 0;
 
+  // High score when this run started, to detect a new personal best at game over.
+  private startingHighScore = 0;
+
   public enter() {
+    this.startingHighScore = this.engine.highScore;
+    onPlatform((p) => p.gameplayStart());
     this.scene.background = new THREE.Color(0x000011);
 
     const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
@@ -271,14 +277,13 @@ export class GameScene extends BaseScene {
       if (this.player.getBoundingBox().intersectsBox(obstacle.getBoundingBox())) {
         this.engine.audioManager.playHitSound();
 
-        if (window.GHA) {
-          window.GHA.endGame({
-            score: this.engine.score,
-            won: false,
-            message: 'Game over'
-          });
-          return;
-        }
+        const finalScore = this.engine.score;
+        const newBest = finalScore > this.startingHighScore;
+        onPlatform((p) => {
+          p.gameplayStop();
+          p.endGame({ score: finalScore, won: false });
+          if (newBest) p.celebrate();
+        });
 
         this.engine.setScene('gameOver');
         return;

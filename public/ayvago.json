@@ -1,0 +1,56 @@
+{
+  "$schema": "https://ayvago.com/schemas/manifest.v1.json",
+  "id": "crystalrunner3d",
+  "title": {
+    "en": "Crystal Runner 3D",
+    "tr": "Crystal Runner 3D"
+  },
+  "description": {
+    "en": "Race through an endless, rotating crystal tunnel. Collect gems, dodge obstacles and see how far you can go.",
+    "tr": "Sonsuz ve dönen bir kristal tünelde koş. Mücevherleri topla, engellerden kaç ve ne kadar uzağa gidebileceğini gör."
+  },
+  "category": "retro_action",
+  "tags": [
+    "3d",
+    "runner",
+    "endless"
+  ],
+  "entry": "https://crystal-runner-3d-three-js-r168.vercel.app/",
+  "orientation": "any",
+  "input": [
+    "touch",
+    "keyboard"
+  ],
+  "players": {
+    "min": 1,
+    "max": 1
+  },
+  "scoring": {
+    "metric": "points",
+    "order": "desc",
+    "format": "number",
+    "label": {
+      "en": "Score",
+      "tr": "Puan"
+    },
+    "minDurationMs": 5000,
+    "maxPerSecond": 500,
+    "maxScore": 10000000
+  },
+  "ads": {
+    "rewarded": [
+      "continue",
+      "double_reward"
+    ],
+    "interstitial": [
+      "game_over"
+    ]
+  },
+  "ageRating": "3+",
+  "sdkVersion": 2,
+  "assets": {
+    "icon": "/ayvago/icon-512.png",
+    "cover": "/ayvago/cover-1920x1080.jpg"
+  },
+  "version": "1.0.0"
+}
